@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Usulan Uji Kompetensi</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: -0.5px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card .number {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .chart-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .filter-container label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: #495057;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            font-size: 13px;
+        }
+
+        .checkbox-group label:hover {
+            background: #f1f3f5;
+            border-color: #667eea;
+        }
+
+        .checkbox-group input {
+            margin-right: 8px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: #667eea;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        #csvFileInput {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .load-button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .load-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .file-name {
+            display: block;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .stat-card .number {
+                font-size: 32px;
+            }
+
+            .checkbox-group {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #dashboardContent {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard Usulan Uji Kompetensi TW III</h1>
+
+        <div class="upload-section">
+            <h2>Upload File CSV</h2>
+            <label for="csvFileInput" class="file-input-label">
+                📁 Pilih File CSV
+            </label>
+            <input type="file" id="csvFileInput" accept=".csv" onchange="showFileName()">
+            <button onclick="loadCSV()" class="load-button">🚀 Load Data</button>
+            <span id="fileName" class="file-name"></span>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+        <div class="stats-row">
+            <div class="stat-card">
+                <h3>Total Usulan Masuk</h3>
+                <div class="number" id="totalUsulan">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pengajuan Dari Unit</h3>
+                <div class="number" id="pengajuanUnit">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Usul Ujian</h3>
+                <div class="number" id="usulUjian">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Selesai</h3>
+                <div class="number" id="selesai">0</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>Filter Bulan</h2>
+            <div class="filter-container">
+                <label>Pilih Bulan:</label>
+                <div class="checkbox-group" id="monthFilter"></div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>Usulan Per Bulan</h2>
+            <div class="chart-wrapper">
+                <canvas id="monthChart"></canvas>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="chart-container">
+                <h2>Jenis Kenaikan Jabatan</h2>
+                <div class="chart-wrapper">
+                    <canvas id="jenisKenaikanChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h2>Jenis Jabatan Fungsional</h2>
+                <div class="chart-wrapper">
+                    <canvas id="jenisJabatanChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="chart-container">
+                <h2>Status Progres Pengajuan</h2>
+                <div class="chart-wrapper">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h2>Status Kelulusan</h2>
+                <div class="chart-wrapper">
+                    <canvas id="kelulusanChart"></canvas>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        let csvData = [];
+        let monthChart, progressChart, kelulusanChart, jenisKenaikanChart, jenisJabatanChart;
+        let selectedMonths = new Set();
+
+        // Show selected file name
+        function showFileName() {
+            const fileInput = document.getElementById('csvFileInput');
+            const fileNameSpan = document.getElementById('fileName');
+            if (fileInput.files.length > 0) {
+                fileNameSpan.textContent = '📄 ' + fileInput.files[0].name;
+            } else {
+                fileNameSpan.textContent = '';
+            }
+        }
+
+        // Function to load CSV from file input
+        function loadCSV() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Silakan pilih file CSV terlebih dahulu!');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                encoding: 'UTF-8',
+                skipEmptyLines: true,
+                complete: function(results) {
+                    csvData = results.data.filter(row => row.NAMA && row.NAMA.trim() !== '');
+                    console.log('Data loaded:', csvData.length);
+
+                    if (csvData.length > 0) {
+                        document.getElementById('dashboardContent').style.display = 'block';
+                        initializeDashboard();
+                    } else {
+                        alert('File CSV tidak mengandung data yang valid!');
+                    }
+                },
+                error: function(error) {
+                    console.error('Error loading CSV:', error);
+                    alert('Error loading data: ' + error.message);
+                }
+            });
+        }
+
+        function initializeDashboard() {
+            // Reset charts if they exist
+            if (monthChart) monthChart.destroy();
+            if (progressChart) progressChart.destroy();
+            if (kelulusanChart) kelulusanChart.destroy();
+            if (jenisKenaikanChart) jenisKenaikanChart.destroy();
+            if (jenisJabatanChart) jenisJabatanChart.destroy();
+
+            // Clear filters
+            selectedMonths.clear();
+            document.getElementById('monthFilter').innerHTML = '';
+
+            updateStats();
+            createMonthFilter();
+            createMonthChart();
+            createJenisKenaikanChart();
+            createJenisJabatanChart();
+            createProgressChart();
+            createKelulusanChart();
+        }
+
+        function updateStats() {
+            const filteredData = getFilteredData();
+            const total = filteredData.length;
+            const pengajuanUnit = filteredData.filter(row =>
+                row['PROGRES PENGAJUAN'] && row['PROGRES PENGAJUAN'].toLowerCase().includes('pengajuan dari unit')
+            ).length;
+            const usulUjian = filteredData.filter(row =>
+                row['PROGRES PENGAJUAN'] && row['PROGRES PENGAJUAN'].toLowerCase().includes('usul ujian')
+            ).length;
+            const selesai = filteredData.filter(row =>
+                row['PROGRES PENGAJUAN'] && row['PROGRES PENGAJUAN'].toLowerCase().includes('selesai')
+            ).length;
+
+            document.getElementById('totalUsulan').textContent = total;
+            document.getElementById('pengajuanUnit').textContent = pengajuanUnit;
+            document.getElementById('usulUjian').textContent = usulUjian;
+            document.getElementById('selesai').textContent = selesai;
+        }
+
+        function createMonthFilter() {
+            const months = [...new Set(csvData.map(row => row['BULAN PENGAJUAN']).filter(m => m))];
+            const monthOrder = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                               'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const sortedMonths = months.sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b));
+
+            const filterContainer = document.getElementById('monthFilter');
+            sortedMonths.forEach(month => {
+                selectedMonths.add(month);
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = month;
+                checkbox.checked = true;
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        selectedMonths.add(month);
+                    } else {
+                        selectedMonths.delete(month);
+                    }
+                    updateAllCharts();
+                });
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(month));
+                filterContainer.appendChild(label);
+            });
+        }
+
+        function createJenisKenaikanChart() {
+            const ctx = document.getElementById('jenisKenaikanChart').getContext('2d');
+            const chartData = getJenisKenaikanChartData();
+
+            // Create colorful gradient bars
+            const colors = chartData.data.map((_, index) => {
+                const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+                const hue = (index * 30) % 360;
+                gradient.addColorStop(0, `hsla(${hue + 250}, 70%, 60%, 0.8)`);
+                gradient.addColorStop(1, `hsla(${hue + 280}, 70%, 50%, 0.8)`);
+                return gradient;
+            });
+
+            jenisKenaikanChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Jumlah Usulan',
+                        data: chartData.data,
+                        backgroundColor: colors,
+                        borderColor: 'rgba(156, 39, 176, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#333'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            borderColor: 'rgba(156, 39, 176, 0.8)',
+                            borderWidth: 2
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: '600'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getJenisKenaikanChartData() {
+            const filteredData = getFilteredData();
+            const jenisKenaikanCounts = {};
+
+            filteredData.forEach(row => {
+                const jenis = row['KENAIKAN JENJANG JABATAN/ALIH JABATAN/PERPINDAHAN JABATAN'] || 'Tidak Ada Data';
+                if (jenis.trim() !== '') {
+                    jenisKenaikanCounts[jenis] = (jenisKenaikanCounts[jenis] || 0) + 1;
+                }
+            });
+
+            // Sort by count descending
+            const sorted = Object.entries(jenisKenaikanCounts)
+                .sort((a, b) => b[1] - a[1]);
+
+            const labels = sorted.map(item => item[0]);
+            const data = sorted.map(item => item[1]);
+
+            return { labels, data };
+        }
+
+        function updateJenisKenaikanChart() {
+            const chartData = getJenisKenaikanChartData();
+            jenisKenaikanChart.data.labels = chartData.labels;
+            jenisKenaikanChart.data.datasets[0].data = chartData.data;
+            jenisKenaikanChart.update();
+        }
+
+        function createJenisJabatanChart() {
+            const ctx = document.getElementById('jenisJabatanChart').getContext('2d');
+            const chartData = getJenisJabatanChartData();
+
+            // Create colorful gradient bars
+            const colors = chartData.data.map((_, index) => {
+                const gradient = ctx.createLinearGradient(0, 0, 400, 0);
+                const hue = (index * 35) % 360;
+                gradient.addColorStop(0, `hsla(${hue + 20}, 80%, 60%, 0.8)`);
+                gradient.addColorStop(1, `hsla(${hue + 40}, 80%, 50%, 0.8)`);
+                return gradient;
+            });
+
+            jenisJabatanChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Jumlah Usulan',
+                        data: chartData.data,
+                        backgroundColor: colors,
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#333'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            borderColor: 'rgba(255, 152, 0, 0.8)',
+                            borderWidth: 2
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: '600'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getJenisJabatanChartData() {
+            const filteredData = getFilteredData();
+            const jenisJabatanCounts = {};
+
+            filteredData.forEach(row => {
+                const jenis = row['JENIS JABATAN FUNGSIONAL'] || 'Tidak Ada Data';
+                if (jenis.trim() !== '') {
+                    jenisJabatanCounts[jenis] = (jenisJabatanCounts[jenis] || 0) + 1;
+                }
+            });
+
+            // Sort by count descending
+            const sorted = Object.entries(jenisJabatanCounts)
+                .sort((a, b) => b[1] - a[1]);
+
+            const labels = sorted.map(item => item[0]);
+            const data = sorted.map(item => item[1]);
+
+            return { labels, data };
+        }
+
+        function updateJenisJabatanChart() {
+            const chartData = getJenisJabatanChartData();
+            jenisJabatanChart.data.labels = chartData.labels;
+            jenisJabatanChart.data.datasets[0].data = chartData.data;
+            jenisJabatanChart.update();
+        }
+
+        function createMonthChart() {
+            const ctx = document.getElementById('monthChart').getContext('2d');
+            const monthCounts = getMonthCounts();
+
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
+            gradient.addColorStop(1, 'rgba(118, 75, 162, 0.8)');
+
+            monthChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthCounts.labels,
+                    datasets: [{
+                        label: 'Jumlah Usulan',
+                        data: monthCounts.counts,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#333'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            borderColor: 'rgba(102, 126, 234, 0.8)',
+                            borderWidth: 2
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                color: '#666'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getMonthCounts() {
+            const monthOrder = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                               'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+            const filteredData = csvData.filter(row =>
+                selectedMonths.has(row['BULAN PENGAJUAN'])
+            );
+
+            const counts = {};
+            filteredData.forEach(row => {
+                const month = row['BULAN PENGAJUAN'];
+                if (month) {
+                    counts[month] = (counts[month] || 0) + 1;
+                }
+            });
+
+            const labels = monthOrder.filter(m => counts[m]);
+            const data = labels.map(m => counts[m]);
+
+            return { labels, counts: data };
+        }
+
+        function updateAllCharts() {
+            // Update stats
+            updateStats();
+
+            // Update month chart
+            const monthCounts = getMonthCounts();
+            monthChart.data.labels = monthCounts.labels;
+            monthChart.data.datasets[0].data = monthCounts.counts;
+            monthChart.update();
+
+            // Update jenis kenaikan chart
+            updateJenisKenaikanChart();
+
+            // Update jenis jabatan chart
+            updateJenisJabatanChart();
+
+            // Update progress chart
+            updateProgressChart();
+
+            // Update kelulusan chart
+            updateKelulusanChart();
+        }
+
+        function getFilteredData() {
+            // Jika tidak ada bulan yang dipilih, tampilkan semua data
+            if (selectedMonths.size === 0) {
+                return csvData;
+            }
+
+            return csvData.filter(row => {
+                const monthMatch = selectedMonths.has(row['BULAN PENGAJUAN']);
+                return monthMatch;
+            });
+        }
+
+        function createProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            const chartData = getProgressChartData();
+
+            progressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Jumlah',
+                        data: chartData.data,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.85)',
+                            'rgba(255, 193, 7, 0.85)',
+                            'rgba(33, 150, 243, 0.85)',
+                            'rgba(156, 39, 176, 0.85)',
+                            'rgba(244, 67, 54, 0.85)',
+                            'rgba(0, 188, 212, 0.85)'
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                        hoverOffset: 15,
+                        hoverBorderWidth: 4,
+                        hoverBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                color: '#333',
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            borderColor: 'rgba(102, 126, 234, 0.5)',
+                            borderWidth: 2,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' usulan';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getProgressChartData() {
+            const filteredData = getFilteredData();
+            const progressCounts = {};
+
+            filteredData.forEach(row => {
+                const progress = row['PROGRES PENGAJUAN'] || 'Tidak Ada Data';
+                progressCounts[progress] = (progressCounts[progress] || 0) + 1;
+            });
+
+            const labels = Object.keys(progressCounts);
+            const data = Object.values(progressCounts);
+            const total = data.reduce((a, b) => a + b, 0);
+            const percentages = data.map(val => ((val / total) * 100).toFixed(1));
+
+            const labelsWithPercentage = labels.map((label, i) =>
+                `${label} (${percentages[i]}%)`
+            );
+
+            return { labels: labelsWithPercentage, data: data };
+        }
+
+        function updateProgressChart() {
+            const chartData = getProgressChartData();
+            progressChart.data.labels = chartData.labels;
+            progressChart.data.datasets[0].data = chartData.data;
+            progressChart.update();
+        }
+
+        function createKelulusanChart() {
+            const ctx = document.getElementById('kelulusanChart').getContext('2d');
+            const chartData = getKelulusanChartData();
+
+            kelulusanChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: 'Jumlah',
+                        data: chartData.data,
+                        backgroundColor: [
+                            'rgba(76, 175, 80, 0.85)',
+                            'rgba(244, 67, 54, 0.85)',
+                            'rgba(158, 158, 158, 0.85)',
+                            'rgba(33, 150, 243, 0.85)',
+                            'rgba(255, 193, 7, 0.85)',
+                            'rgba(156, 39, 176, 0.85)',
+                            'rgba(255, 87, 34, 0.85)'
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                        hoverOffset: 15,
+                        hoverBorderWidth: 4,
+                        hoverBorderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                color: '#333',
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            borderColor: 'rgba(102, 126, 234, 0.5)',
+                            borderWidth: 2,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' usulan';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getKelulusanChartData() {
+            const filteredData = getFilteredData();
+            const kelulusanCounts = {};
+
+            filteredData.forEach(row => {
+                const status = row['STATUS KELULUSAN'] || 'Belum Ada Status';
+                if (status.trim() !== '') {
+                    kelulusanCounts[status] = (kelulusanCounts[status] || 0) + 1;
+                } else {
+                    kelulusanCounts['Belum Ada Status'] = (kelulusanCounts['Belum Ada Status'] || 0) + 1;
+                }
+            });
+
+            const labels = Object.keys(kelulusanCounts);
+            const data = Object.values(kelulusanCounts);
+            const total = data.reduce((a, b) => a + b, 0);
+            const percentages = data.map(val => ((val / total) * 100).toFixed(1));
+
+            const labelsWithPercentage = labels.map((label, i) =>
+                `${label} (${percentages[i]}%)`
+            );
+
+            return { labels: labelsWithPercentage, data: data };
+        }
+
+        function updateKelulusanChart() {
+            const chartData = getKelulusanChartData();
+            kelulusanChart.data.labels = chartData.labels;
+            kelulusanChart.data.datasets[0].data = chartData.data;
+            kelulusanChart.update();
+        }
+    </script>
+</body>
+</html>

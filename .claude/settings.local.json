@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"/c/Users/iqbal/AppData/Local/Programs/Python/Launcher/py.exe\" \"d:\\Kantor\\2025\\Pokja Pengembangan Kompetensi\\Usul Uji Kompetensi\\Pelaporan\\update_bulan_pengajuan.py\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
