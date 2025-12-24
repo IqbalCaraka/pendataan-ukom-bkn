@@ -127,7 +127,7 @@
 
         .chart-wrapper-large {
             position: relative;
-            height: 600px;
+            height: 1200px;
         }
 
         .filter-container {
@@ -411,14 +411,14 @@
 
         <div class="chart-container">
             <h2>Jenis Kenaikan Jabatan</h2>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper-large">
                 <canvas id="jenisKenaikanChart"></canvas>
             </div>
         </div>
 
         <div class="chart-container">
             <h2>Jenis Jabatan Fungsional</h2>
-            <div class="chart-wrapper">
+            <div class="chart-wrapper-large">
                 <canvas id="jenisJabatanChart"></canvas>
             </div>
         </div>
@@ -583,9 +583,9 @@
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false,
-                        barThickness: 25,
-                        categoryPercentage: 0.9,
-                        barPercentage: 0.8
+                        barThickness: 18,
+                        categoryPercentage: 0.95,
+                        barPercentage: 0.7
                     }]
                 },
                 options: {
@@ -650,7 +650,7 @@
                                 autoSkip: false,
                                 maxRotation: 0,
                                 minRotation: 0,
-                                padding: 8
+                                padding: 12
                             },
                             grid: {
                                 display: false
@@ -730,9 +730,9 @@
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false,
-                        barThickness: 25,
-                        categoryPercentage: 0.9,
-                        barPercentage: 0.8
+                        barThickness: 18,
+                        categoryPercentage: 0.95,
+                        barPercentage: 0.7
                     }]
                 },
                 options: {
@@ -797,7 +797,7 @@
                                 autoSkip: false,
                                 maxRotation: 0,
                                 minRotation: 0,
-                                padding: 8
+                                padding: 12
                             },
                             grid: {
                                 display: false
@@ -1267,8 +1267,8 @@
                 // Capture Charts
                 const charts = [
                     { id: 'monthChart', title: 'Usulan Per Bulan', height: 70 },
-                    { id: 'jenisKenaikanChart', title: 'Jenis Kenaikan Jabatan', height: 110 },
-                    { id: 'jenisJabatanChart', title: 'Jenis Jabatan Fungsional', height: 110 },
+                    { id: 'jenisKenaikanChart', title: 'Jenis Kenaikan Jabatan', height: 180 },
+                    { id: 'jenisJabatanChart', title: 'Jenis Jabatan Fungsional', height: 180 },
                     { id: 'progressChart', title: 'Status Progres Pengajuan', height: 70 },
                     { id: 'kelulusanChart', title: 'Status Kelulusan', height: 70 }
                 ];
