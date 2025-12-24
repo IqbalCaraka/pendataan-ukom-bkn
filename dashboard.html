@@ -125,6 +125,11 @@
             height: 400px;
         }
 
+        .chart-wrapper-large {
+            position: relative;
+            height: 600px;
+        }
+
         .filter-container {
             margin-bottom: 20px;
             padding: 20px;
@@ -407,14 +412,14 @@
         <div class="grid-2">
             <div class="chart-container">
                 <h2>Jenis Kenaikan Jabatan</h2>
-                <div class="chart-wrapper">
+                <div class="chart-wrapper-large">
                     <canvas id="jenisKenaikanChart"></canvas>
                 </div>
             </div>
 
             <div class="chart-container">
                 <h2>Jenis Jabatan Fungsional</h2>
-                <div class="chart-wrapper">
+                <div class="chart-wrapper-large">
                     <canvas id="jenisJabatanChart"></canvas>
                 </div>
             </div>
@@ -586,6 +591,11 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
+                    layout: {
+                        padding: {
+                            right: 50
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: true,
@@ -609,6 +619,18 @@
                             },
                             borderColor: 'rgba(156, 39, 176, 0.8)',
                             borderWidth: 2
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value) {
+                                return value;
+                            }
                         }
                     },
                     scales: {
@@ -629,17 +651,36 @@
                         y: {
                             ticks: {
                                 font: {
-                                    size: 11,
+                                    size: 12,
                                     weight: '600'
                                 },
-                                color: '#666'
+                                color: '#333',
+                                autoSkip: false,
+                                maxRotation: 0,
+                                minRotation: 0
                             },
                             grid: {
                                 display: false
                             }
                         }
                     }
-                }
+                },
+                plugins: [{
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach(function(dataset, i) {
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, index) {
+                                const data = dataset.data[index];
+                                ctx.fillStyle = '#333';
+                                ctx.font = 'bold 13px Arial';
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(data, bar.x + 5, bar.y);
+                            });
+                        });
+                    }
+                }]
             });
         }
 
@@ -702,6 +743,11 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
+                    layout: {
+                        padding: {
+                            right: 50
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: true,
@@ -745,17 +791,36 @@
                         y: {
                             ticks: {
                                 font: {
-                                    size: 11,
+                                    size: 12,
                                     weight: '600'
                                 },
-                                color: '#666'
+                                color: '#333',
+                                autoSkip: false,
+                                maxRotation: 0,
+                                minRotation: 0
                             },
                             grid: {
                                 display: false
                             }
                         }
                     }
-                }
+                },
+                plugins: [{
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        chart.data.datasets.forEach(function(dataset, i) {
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, index) {
+                                const data = dataset.data[index];
+                                ctx.fillStyle = '#333';
+                                ctx.font = 'bold 13px Arial';
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(data, bar.x + 5, bar.y);
+                            });
+                        });
+                    }
+                }]
             });
         }
 
@@ -1201,18 +1266,18 @@
 
                 // Capture Charts
                 const charts = [
-                    { id: 'monthChart', title: 'Usulan Per Bulan' },
-                    { id: 'jenisKenaikanChart', title: 'Jenis Kenaikan Jabatan' },
-                    { id: 'jenisJabatanChart', title: 'Jenis Jabatan Fungsional' },
-                    { id: 'progressChart', title: 'Status Progres Pengajuan' },
-                    { id: 'kelulusanChart', title: 'Status Kelulusan' }
+                    { id: 'monthChart', title: 'Usulan Per Bulan', height: 70 },
+                    { id: 'jenisKenaikanChart', title: 'Jenis Kenaikan Jabatan', height: 110 },
+                    { id: 'jenisJabatanChart', title: 'Jenis Jabatan Fungsional', height: 110 },
+                    { id: 'progressChart', title: 'Status Progres Pengajuan', height: 70 },
+                    { id: 'kelulusanChart', title: 'Status Kelulusan', height: 70 }
                 ];
 
                 for (let i = 0; i < charts.length; i++) {
                     const chart = charts[i];
 
                     // Check if we need a new page
-                    if (yPosition > pageHeight - 100) {
+                    if (yPosition > pageHeight - chart.height - 20) {
                         pdf.addPage();
                         yPosition = margin;
                     }
@@ -1225,9 +1290,9 @@
 
                     // Capture chart as image
                     const canvas = document.getElementById(chart.id);
-                    const imgData = canvas.toDataURL('image/png');
+                    const imgData = canvas.toDataURL('image/png', 1.0);
                     const imgWidth = pageWidth - 2 * margin;
-                    const imgHeight = 70;
+                    const imgHeight = chart.height;
 
                     pdf.addImage(imgData, 'PNG', margin, yPosition, imgWidth, imgHeight);
                     yPosition += imgHeight + 10;
