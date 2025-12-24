@@ -583,6 +583,9 @@
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false,
+                        barThickness: 25,
+                        categoryPercentage: 0.9,
+                        barPercentage: 0.8
                     }]
                 },
                 options: {
@@ -591,7 +594,10 @@
                     indexAxis: 'y',
                     layout: {
                         padding: {
-                            right: 50
+                            right: 50,
+                            left: 10,
+                            top: 10,
+                            bottom: 10
                         }
                     },
                     plugins: {
@@ -617,18 +623,6 @@
                             },
                             borderColor: 'rgba(156, 39, 176, 0.8)',
                             borderWidth: 2
-                        },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'end',
-                            color: '#333',
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            formatter: function(value) {
-                                return value;
-                            }
                         }
                     },
                     scales: {
@@ -649,13 +643,14 @@
                         y: {
                             ticks: {
                                 font: {
-                                    size: 12,
+                                    size: 11,
                                     weight: '600'
                                 },
                                 color: '#333',
                                 autoSkip: false,
                                 maxRotation: 0,
-                                minRotation: 0
+                                minRotation: 0,
+                                padding: 8
                             },
                             grid: {
                                 display: false
@@ -671,7 +666,7 @@
                             meta.data.forEach(function(bar, index) {
                                 const data = dataset.data[index];
                                 ctx.fillStyle = '#333';
-                                ctx.font = 'bold 13px Arial';
+                                ctx.font = 'bold 12px Arial';
                                 ctx.textAlign = 'left';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText(data, bar.x + 5, bar.y);
@@ -735,6 +730,9 @@
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false,
+                        barThickness: 25,
+                        categoryPercentage: 0.9,
+                        barPercentage: 0.8
                     }]
                 },
                 options: {
@@ -743,7 +741,10 @@
                     indexAxis: 'y',
                     layout: {
                         padding: {
-                            right: 50
+                            right: 50,
+                            left: 10,
+                            top: 10,
+                            bottom: 10
                         }
                     },
                     plugins: {
@@ -789,13 +790,14 @@
                         y: {
                             ticks: {
                                 font: {
-                                    size: 12,
+                                    size: 11,
                                     weight: '600'
                                 },
                                 color: '#333',
                                 autoSkip: false,
                                 maxRotation: 0,
-                                minRotation: 0
+                                minRotation: 0,
+                                padding: 8
                             },
                             grid: {
                                 display: false
@@ -811,7 +813,7 @@
                             meta.data.forEach(function(bar, index) {
                                 const data = dataset.data[index];
                                 ctx.fillStyle = '#333';
-                                ctx.font = 'bold 13px Arial';
+                                ctx.font = 'bold 12px Arial';
                                 ctx.textAlign = 'left';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText(data, bar.x + 5, bar.y);
